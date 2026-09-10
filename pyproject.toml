@@ -1,0 +1,43 @@
+[project]
+name = "finrag"
+version = "0.1.0"
+description = "FinancialAssistant: 面向面试的企业级 RAG + Tool Calling 复合 Agent（LangGraph）"
+requires-python = ">=3.14"
+dependencies = [
+    "langgraph",
+    "langgraph-checkpoint",
+    "langchain",
+    "langchain-core",
+    "langchain-community",
+    "langchain-text-splitters",
+    "langchain-openai",
+    "langchain-chroma",
+    "chromadb",
+    "pydantic",
+    "rank-bm25",
+    "pypdf",
+    "python-dotenv",
+    "PyYAML",
+]
+
+[dependency-groups]
+dev = ["pyrefly", "ruff", "types-PyYAML"]
+
+[tool.pyrefly]
+python-version = "3.14"
+python-interpreter-path = ".venv/bin/python"
+project-includes = ["main.py", "src", "eval"]
+min-severity = "warn"
+
+[tool.ruff.lint]
+# 显式启用 BLE001（宽泛 except），让各处 # noqa: BLE001 记录
+# "刻意兜底降级、不让链路中断"的设计意图，使宽泛捕获可审计——
+# 后续新增 except Exception 必须显式 noqa 说明理由。
+extend-select = ["BLE001"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/finrag"]

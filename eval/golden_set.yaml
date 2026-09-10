@@ -1,0 +1,206 @@
+# finrag 检索评估黄金集（Golden Set）
+# -----------------------------------------------------------------------------
+# 用途：量化检索质量，作为"优化依据"与"回归门禁"。
+# 两套命中口径（compare.py 双指标输出）：
+#   1. 文档级：检索 Top-k 是否命中 expected_sources 之一（"能否召回答案所在文档"）
+#   2. 答案级：期望 answer 片段是否真实出现在召回 chunk 的文本中
+#      （"喂给 LLM 的上下文里，答案是否真的出现"，更严格）
+# 结构：
+#   query            用户问题（检索输入原文）
+#   expected_sources 期望命中的来源文档（短文件名）
+#   answer           期望答案的唯一片段（须与文档原文子串一致，用于答案级判定）
+#   type             用例类型：
+#     - direct   关键词直接命中（验证基线不会坏）
+#     - semantic 依赖语义理解，关键词弱相关（验证语义召回）
+#     - fuzzy    易混淆/冷门表述（验证精排区分度）
+#   note             备注（面试讲解时可用）
+# -----------------------------------------------------------------------------
+
+- query: "华信科技2024年营业收入是多少？同比增长多少？"
+  expected_sources: ["2024年年报摘要-华信科技.txt"]
+  answer: "96.8 亿元"
+  type: direct
+  note: "年报核心数字"
+
+- query: "华信科技2024年归属于上市公司股东的净利润是多少？"
+  expected_sources: ["2024年年报摘要-华信科技.txt"]
+  answer: "12.7 亿元"
+  type: direct
+  note: "注意与一季度净利润区分"
+
+- query: "华信科技2024年研发投入占营业收入比例是多少？"
+  expected_sources: ["2024年年报摘要-华信科技.txt"]
+  answer: "16.1%"
+  type: direct
+
+- query: "华信科技2024年每10股派发多少现金红利？"
+  expected_sources: ["2024年年报摘要-华信科技.txt"]
+  answer: "4.5 元"
+  type: direct
+
+- query: "华信科技2024年加权平均ROE是多少？毛利率呢？"
+  expected_sources: ["2024年年报摘要-华信科技.txt"]
+  answer: "16.8%"
+  type: direct
+  note: "ROE 一词同时出现在财务估值文档，存在跨文档干扰"
+
+- query: "华信科技2024年有多少研发人员？占比多少？"
+  expected_sources: ["2024年年报摘要-华信科技.txt"]
+  answer: "41%"
+  type: semantic
+
+- query: "华信科技去年全年获得了多少项发明专利？"
+  expected_sources: ["2024年年报摘要-华信科技.txt"]
+  answer: "218 项"
+  type: semantic
+  note: "'去年'需结合多轮语义，仅关键词难召回"
+
+- query: "华信科技2024年经营活动产生的现金流量净额是多少？"
+  expected_sources: ["2024年年报摘要-华信科技.txt"]
+  answer: "21.3 亿元"
+  type: direct
+
+- query: "华信科技2024年AI相关业务收入是多少？增速如何？"
+  expected_sources: ["2024年年报摘要-华信科技.txt"]
+  answer: "18.9 亿元"
+  type: semantic
+  note: "原文表述为'人工智能解决方案业务'，Query 用缩写 AI，考验语义泛化"
+
+- query: "华信科技2024年AI业务收入占比有多少？"
+  expected_sources: ["2024年年报摘要-华信科技.txt"]
+  answer: "18.9 亿元"
+  type: fuzzy
+  note: "2024 年原文未直接给 AI 占比（仅有收入金额），与一季度占比 22.6% 易混淆"
+
+- query: "华信科技2025年一季度营业收入是多少？"
+  expected_sources: ["2025年一季度业绩公告-华信科技.txt"]
+  answer: "27.4 亿元"
+  type: direct
+
+- query: "华信科技2025年第一季度净利润多少？同比增长多少？"
+  expected_sources: ["2025年一季度业绩公告-华信科技.txt"]
+  answer: "3.6 亿元"
+  type: direct
+
+- query: "华信科技2025年一季度人工智能业务收入占比提升到多少？"
+  expected_sources: ["2025年一季度业绩公告-华信科技.txt"]
+  answer: "22.6%"
+  type: semantic
+
+- query: "华信科技2025年一季度新增了多少个大模型应用订单？"
+  expected_sources: ["2025年一季度业绩公告-华信科技.txt"]
+  answer: "60 个"
+  type: direct
+
+- query: "华信科技2025年一季度在手合同负债增长情况如何？"
+  expected_sources: ["2025年一季度业绩公告-华信科技.txt"]
+  answer: "25.6%"
+  type: semantic
+  note: "合同负债概念在财务估值文档也有讨论，跨文档干扰用例"
+
+- query: "华信科技今年一季度的货币资金余额是多少？"
+  expected_sources: ["2025年一季度业绩公告-华信科技.txt"]
+  answer: "38.7 亿元"
+  type: fuzzy
+  note: "'今年'时间指代 + 金额细节"
+
+- query: "2025年国内新型储能累计装机规模预计突破多少？"
+  expected_sources: ["新能源行业研究报告.txt"]
+  answer: "120GW"
+  type: direct
+
+- query: "储能行业2025年装机增长情况如何？"
+  expected_sources: ["新能源行业研究报告.txt"]
+  answer: "45%"
+  type: semantic
+  note: "问题概括性强，原文需语义定位到'装机规模同比增长约45%'"
+
+- query: "工商储2025年上半年新增装机同比增长了多少？"
+  expected_sources: ["新能源行业研究报告.txt"]
+  answer: "80%"
+  type: direct
+
+- query: "磷酸铁锂储能电芯价格现在降到多少钱？"
+  expected_sources: ["新能源行业研究报告.txt"]
+  answer: "0.35 元/Wh"
+  type: semantic
+  note: "'现在'对应报告口径"
+
+- query: "TOPCon电池目前的市场占有率是多少？"
+  expected_sources: ["新能源行业研究报告.txt"]
+  answer: "60%"
+  type: direct
+
+- query: "光伏组件价格回落到什么水平？"
+  expected_sources: ["新能源行业研究报告.txt"]
+  answer: "0.75 元/W"
+  type: direct
+
+- query: "储能板块当前平均市盈率是多少？估值处于什么水平？"
+  expected_sources: ["新能源行业研究报告.txt"]
+  answer: "28 倍"
+  type: fuzzy
+  note: "PE 概念易被财务估值文档干扰"
+
+- query: "什么是PEG？怎么用它判断估值是否合理？"
+  expected_sources: ["财务估值与投资分析基础.txt"]
+  answer: "PE 除以盈利增长率"
+  type: direct
+
+- query: "净现比是什么？为什么重要？"
+  expected_sources: ["财务估值与投资分析基础.txt"]
+  answer: "净现比大于 1"
+  type: direct
+  note: "净现比 = 经营现金流/净利润，比值大于1说明盈利质量好"
+
+- query: "什么是杜邦分析？ROE怎么分解？"
+  expected_sources: ["财务估值与投资分析基础.txt"]
+  answer: "净利率 × 总资产周转率 × 权益乘数"
+  type: direct
+
+- query: "合同负债为什么能预示未来收入？"
+  expected_sources: ["财务估值与投资分析基础.txt"]
+  answer: "增长通常预示未来收入确定性强"
+  type: semantic
+  note: "与一季度业绩公告形成跨文档干扰"
+
+- query: "市盈率PE怎么计算？适用于什么类型的公司？"
+  expected_sources: ["财务估值与投资分析基础.txt"]
+  answer: "市值除以净利润"
+  type: direct
+
+- query: "如何判断一家公司盈利的现金含金量？"
+  expected_sources: ["财务估值与投资分析基础.txt"]
+  answer: "经营性现金流净额大于净利润"
+  type: semantic
+  note: "考察语义理解：含金量 -> 经营现金流 vs 净利润"
+
+- query: "华信科技董事会下设哪几个专门委员会？"
+  expected_sources: ["公司治理与内部控制-华信科技.txt"]
+  answer: "薪酬与考核委员会"
+  type: direct
+
+- query: "华信科技独立董事占董事会成员比例是多少？"
+  expected_sources: ["公司治理与内部控制-华信科技.txt"]
+  answer: "超过三分之一"
+  type: direct
+
+- query: "华信科技2024年信息披露评级是什么？"
+  expected_sources: ["公司治理与内部控制-华信科技.txt"]
+  answer: "A 级"
+  type: direct
+
+- query: "华信科技的审计委员会多久召开一次会议？"
+  expected_sources: ["公司治理与内部控制-华信科技.txt"]
+  answer: "每季度至少召开一次会议"
+  type: direct
+
+- query: "华信科技2024年接待了多少批次机构投资者调研？"
+  expected_sources: ["公司治理与内部控制-华信科技.txt"]
+  answer: "26 批次"
+  type: direct
+
+- query: "华信科技的内部控制体系覆盖了哪些核心业务流程？"
+  expected_sources: ["公司治理与内部控制-华信科技.txt"]
+  answer: "采购、销售、研发、财务"
+  type: semantic

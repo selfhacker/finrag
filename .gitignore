@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# 环境变量与密钥（严禁提交）
+.env
+
+# 运行时产物
+chroma_db/
+dist/
+build/
+
+# IDE
+.idea/
+.DS_Store
+
+# opencode 工具链依赖（skills 等配置仍随仓库提交）
+.opencode/node_modules/
+
+# 缓存
+.ruff_cache/
+.mypy_cache/
+
+# 测试与日志
+.pytest_cache/
+logs/
+*.log
