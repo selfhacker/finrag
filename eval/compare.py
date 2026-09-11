@@ -32,7 +32,7 @@ EVAL_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(EVAL_DIR))
 # pyrefly: ignore[missing-import] 原因：metrics 模块通过运行时 sys.path 注入，
 # 静态解析（按 src/ 布局）无法发现，属运行时导入技巧，非真实缺失。
-from metrics import (
+from metrics import (  # noqa: E402
     Chunk,
     answer_hit_at_k,
     answer_mrr_at_k,
@@ -41,7 +41,7 @@ from metrics import (
     mrr_at_k,
 )
 
-from finrag.rag_retriever import FinancialRetriever
+from finrag.rag_retriever import FinancialRetriever  # noqa: E402
 
 GOLDEN_SET_FILE = EVAL_DIR / "golden_set.yaml"
 

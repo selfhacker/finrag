@@ -33,7 +33,12 @@ min-severity = "warn"
 # 显式启用 BLE001（宽泛 except），让各处 # noqa: BLE001 记录
 # "刻意兜底降级、不让链路中断"的设计意图，使宽泛捕获可审计——
 # 后续新增 except Exception 必须显式 noqa 说明理由。
-extend-select = ["BLE001"]
+#
+# 另显式启用 E402（import 不在文件顶部）：main.py 必须在 langchain/langsmith
+# import 之前调用 load_dotenv()（langsmith 的 get_env_var 带 lru_cache，晚加载
+# 会固化空值），eval 脚本需先注入 sys.path 再 import 本地模块——这类刻意的
+# import 顺序统一用 # noqa: E402 标注，让规则显式而非缺省放行。
+extend-select = ["BLE001", "E402"]
 
 [build-system]
 requires = ["hatchling"]

@@ -24,13 +24,15 @@ import sys
 from pathlib import Path
 
 from dotenv import load_dotenv
-from langchain_core.messages import AIMessageChunk, HumanMessage
 
-from finrag import config
-from finrag.agent_graph import graph
-
-# 加载项目根 .env（锚定路径，避免从非项目根目录启动时加载不到密钥）
+# 必须在 langchain/langsmith import 之前加载 .env（锚定项目根，避免从非项目根目录启动时加载不到密钥）：
+# langsmith 的 get_env_var 带 lru_cache，首次读取即固化，晚加载会被忽略——PyCharm 对 LangChain 项目有此官方检查。
 load_dotenv(Path(__file__).resolve().parent / ".env")
+
+from langchain_core.messages import AIMessageChunk, HumanMessage  # noqa: E402
+
+from finrag import config  # noqa: E402
+from finrag.agent_graph import graph  # noqa: E402
 
 # 日志配置：输出 @trace 打点（P99 复盘依据）。
 # 生产建议接入 json handler 统一采集到 ELK/Loki。
